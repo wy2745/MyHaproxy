@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.hyperic.sigar.SigarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +33,14 @@ public class DispatchController extends BaseController {
     @RequestMapping(value = "/redirect", method = { RequestMethod.GET, RequestMethod.POST })
     public void redirect(HttpServletRequest httpServletRequest,
                          HttpServletResponse httpServletResponse) {
+        try {
+            System.out.println(System.getProperty("java.library.path"));
+            dispatchService.memory();
+            dispatchService.cpu();
+        } catch (SigarException e1) {
+            System.out.println(e1);
+        }
+
         System.out.println(dispatchService.getAction(httpServletRequest));
         if (httpServletRequest.getMethod().equals("GET")) {
             try {
