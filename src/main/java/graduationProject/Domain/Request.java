@@ -22,6 +22,9 @@ public class Request {
     @Column(name = "requestPath")
     private String requestPath;
 
+    @Column(name = "serviceId")
+    private int    serviceId;
+
     @Column(name = "method")
     private String method;
 
@@ -80,6 +83,14 @@ public class Request {
 
     public void setTimeCost(double timeCost) {
         this.timeCost = timeCost;
+    }
+
+    public int getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(int serviceId) {
+        this.serviceId = serviceId;
     }
 
 }

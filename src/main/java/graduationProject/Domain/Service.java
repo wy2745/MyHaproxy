@@ -19,8 +19,13 @@ public class Service {
     @GenericGenerator(name = "increment", strategy = "increment")
     private int    serviceId;
 
+    @Column(name = "serviceName")
+    private String serviceName;
+
     @Column(name = "serviceType")
     private String serviceType;
+
+    //    private Map<String, Pod> pods;
 
     public int getServiceId() {
         return serviceId;
@@ -37,4 +42,40 @@ public class Service {
     public void setServiceType(String serviceType) {
         this.serviceType = serviceType;
     }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    //    public void setPods(Map<String, Pod> pods) {
+    //        this.pods = pods;
+    //    }
+    //
+    //    public void addPod(Pod pod) {
+    //        if (this.pods.containsKey(pod.getPodName()))
+    //            System.out.println("已存在pod");
+    //        else
+    //            this.pods.put(pod.getPodName(), pod);
+    //    }
+    //
+    //    public void deletePod(Pod pod) {
+    //        if (this.pods.containsKey(pod.getPodName()))
+    //            this.pods.remove(pod.getPodName());
+    //    }
+    //
+    //    public void flushPod(List<Pod> podset) {
+    //        this.pods.clear();
+    //        for (Pod pod : podset) {
+    //            this.pods.put(pod.getPodName(), pod);
+    //        }
+    //        System.out.println("成功刷新service所属pod的状态");
+    //    }
+    //
+    //    public Map<String, Pod> getPods() {
+    //        return this.pods;
+    //    }
 }

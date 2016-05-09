@@ -30,18 +30,22 @@ public class DispatchController extends BaseController {
     @Autowired
     private DispatchService dispatchService;
 
+    @RequestMapping(value = "/testRedis", method = RequestMethod.GET)
+    public void testredis() {
+        dispatchService.testRedis();
+    }
+
     @RequestMapping(value = "/redirect", method = { RequestMethod.GET, RequestMethod.POST })
     public void redirect(HttpServletRequest httpServletRequest,
                          HttpServletResponse httpServletResponse) {
         try {
-            System.out.println(System.getProperty("java.library.path"));
+            //System.out.println(System.getProperty("java.library.path"));
             dispatchService.memory();
             dispatchService.cpu();
         } catch (SigarException e1) {
             System.out.println(e1);
         }
-
-        System.out.println(dispatchService.getAction(httpServletRequest));
+        System.out.println(dispatchService.getRequestPath(httpServletRequest));
         if (httpServletRequest.getMethod().equals("GET")) {
             try {
                 httpServletResponse.sendRedirect(
