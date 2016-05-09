@@ -39,6 +39,8 @@ public class DispatchService extends BaseService {
     @Autowired
     private RedisTemplate<String, RequestRedis> requestRedisTemplate;
 
+    private String                              servicePrefix = "Service:";
+
     //    @Autowired
     //    private PodDAO                                         podDAO;
     //
@@ -56,99 +58,20 @@ public class DispatchService extends BaseService {
     //
     //    private Map<String, Request>                           requestMap;
 
-    public void testRedis() {
-        //        ValueOperations<String, testRedis> operations = this.redisTemplate.opsForValue();
-        //        testRedis testRedis = new testRedis("haha", 12);
-        //        if (operations.get("90") == null) {
-        //            operations.set("90", testRedis);
-        //            System.out.println("...");
-        //        }
-        //        System.out.println(operations.get("90").getUsername());
-        //        this.redisTemplate.delete("90");
+    public void generateForTest() {
+        addService(1, "pupu", "a");
+        addPod("haha", 1, 1, "http://zui.ms/api/user", 1);
 
-        ValueOperations<String, PodRedis> podRedisoperations = this.podRedisTemplate.opsForValue();
-        ValueOperations<String, RequestRedis> requestRedisoperations = this.requestRedisTemplate
-            .opsForValue();
-        ValueOperations<String, ServiceRedis> serviceRedisoperations = this.serviceRedisTemplate
-            .opsForValue();
-        ValueOperations<String, List<String>> podInServiceRedisoperations = this.podInServiceRedisTemplate
-            .opsForValue();
+        addRequest("/users/images", 1, "GET", 1, 1, 1);
+        addRequest("/users", 1, "POST", 1, 1, 1);
 
-        PodRedis podRedis = new PodRedis();
-        podRedis.setAddress("222.222.22");
-        podRedis.setCpuUsage(1);
-        podRedis.setMemUsage(1);
-        podRedis.setPodName("haha");
-        podRedis.setServiceId(1);
+    }
 
-        PodRedis podRedis2 = new PodRedis();
-        podRedis2.setAddress("222.222.22");
-        podRedis2.setCpuUsage(1);
-        podRedis2.setMemUsage(1);
-        podRedis2.setPodName("haha2");
-        podRedis2.setServiceId(2);
-
-        List<String> pod = new Vector<>();
-        pod.add("haha");
-        pod.add("haha2");
-
-        ServiceRedis serviceRedis = new ServiceRedis();
-        serviceRedis.setServiceId(1);
-        serviceRedis.setServiceName("pupu");
-        serviceRedis.setServiceType("a");
-
-        RequestRedis requestRedis = new RequestRedis();
-        requestRedis.setCpuCost(1);
-        requestRedis.setMemCost(1);
-        requestRedis.setMethod("get");
-        requestRedis.setRequestId(1);
-        requestRedis.setRequestPath("/user");
-        requestRedis.setServiceId(1);
-        requestRedis.setTimeCost(1);
-
-        if (podRedisoperations.get(podRedis.getPodName()) == null) {
-            System.out.println("pod: " + podRedis.getPodName() + "不存在");
-            podRedisoperations.set(podRedis.getPodName(), podRedis);
-        }
-        System.out.println("pod: " + podRedisoperations.get(podRedis.getPodName()).getPodName());
-
-        if (podRedisoperations.get(podRedis2.getPodName()) == null) {
-            System.out.println("pod: " + podRedis2.getPodName() + "不存在");
-            podRedisoperations.set(podRedis2.getPodName(), podRedis2);
-        }
-        System.out.println("pod: " + podRedisoperations.get(podRedis2.getPodName()).getPodName());
-
-        if (serviceRedisoperations.get(String.valueOf(serviceRedis.getServiceId())) == null) {
-            System.out.println("service: " + serviceRedis.getServiceId() + "不存在");
-            serviceRedisoperations.set(String.valueOf(serviceRedis.getServiceId()), serviceRedis);
-        }
-        System.out.println("service: " + serviceRedisoperations
-            .get(String.valueOf(serviceRedis.getServiceId())).getServiceId());
-
-        if (podInServiceRedisoperations
-            .get("p" + String.valueOf(serviceRedis.getServiceId())) == null) {
-            System.out.println("podInService: " + serviceRedis.getServiceId() + "不存在");
-            podInServiceRedisoperations.set("p" + String.valueOf(serviceRedis.getServiceId()), pod);
-        }
-        System.out.println("podInService: "
-                           + podInServiceRedisoperations
-                               .get("p" + String.valueOf(serviceRedis.getServiceId())).get(0)
-                           + "  " + podInServiceRedisoperations
-                               .get("p" + String.valueOf(serviceRedis.getServiceId())).get(1));
-
-        if (requestRedisoperations.get(requestRedis.getRequestPath()) == null) {
-            System.out.println("request: " + requestRedis.getRequestPath() + "不存在");
-            requestRedisoperations.set(requestRedis.getRequestPath(), requestRedis);
-        }
-        System.out
-            .println("request: "
-                     + requestRedisoperations.get(requestRedis.getRequestPath()).getRequestPath());
-
-        requestRedisTemplate.delete(requestRedis.getRequestPath());
-        podInServiceRedisTemplate.delete("p" + String.valueOf(serviceRedis.getServiceId()));
-        podRedisTemplate.delete(podRedis.getPodName());
-        podRedisTemplate.delete(podRedis2.getPodName());
-        serviceRedisTemplate.delete(String.valueOf(serviceRedis.getServiceId()));
+    public void deleteForTest() {
+        deletePod("haha");
+        deleteRequest("/users/images");
+        deleteRequest("/users");
+        deleteService(1);
     }
 
     //    @Scheduled(initialDelay = 1000, fixedRate = 300000)
@@ -185,6 +108,21 @@ public class DispatchService extends BaseService {
     //        System.out.println("初始化成功");
     //    }
 
+    private void forwardRequest(HttpServletRequest httpServletRequest,
+                                HttpServletResponse httpServletResponse, String url) {
+        String method = httpServletRequest.getMethod();
+        if (method.equals("GET")) {
+            try {
+                httpServletResponse.sendRedirect(url + "?" + httpServletRequest.getQueryString());
+            } catch (IOException e) {
+                logger.error("", e);
+            }
+        } else {
+            httpServletResponse.setStatus(307);
+            httpServletResponse.addHeader("Location", url);
+        }
+    }
+
     public void dispatchRequest(HttpServletRequest httpServletRequest,
                                 HttpServletResponse httpServletResponse, String mode) {
         String method = httpServletRequest.getMethod();
@@ -196,6 +134,8 @@ public class DispatchService extends BaseService {
         }
         ServiceRedis serviceRedis = getServiceById(requestRedis.getServiceId());
         String desination = pick(requestRedis, serviceRedis, mode);
+        forwardRequest(httpServletRequest, httpServletResponse,
+            this.podRedisTemplate.opsForValue().get(desination).getAddress() + requestPath);
     }
 
     private int generateRanNum(int max) {
@@ -216,10 +156,9 @@ public class DispatchService extends BaseService {
         if (mode.equals("random")) {
             ValueOperations<String, List<String>> valueOperations = podInServiceRedisTemplate
                 .opsForValue();
-            int max = valueOperations.get("p" + String.valueOf(serviceRedis.getServiceId())).size();
+            int max = getPodListByServiceId(serviceRedis.getServiceId()).size();
             int target = generateRanNum(max);
-            return valueOperations.get("p" + String.valueOf(serviceRedis.getServiceId()))
-                .get(target);
+            return getPodListByServiceId(serviceRedis.getServiceId()).get(target);
         }
         return null;
     }
@@ -270,14 +209,6 @@ public class DispatchService extends BaseService {
                 String str = reader.readLine();
                 while (str != null) {
                     if (str.contains("RequestPath")) {
-                        try {
-                            System.out.println("Cpu");
-                            cpu();
-                            System.out.println("Mem");
-                            memory();
-                        } catch (SigarException e) {
-                            logger.error("", e);
-                        }
                         return str.split("\"")[3];
                     }
                     str = reader.readLine();
@@ -290,28 +221,108 @@ public class DispatchService extends BaseService {
         return null;
     }
 
-    public void addPod(PodRedis podRedis) {
+    public List<String> getPodListByServiceId(int serviceId) {
+        ValueOperations<String, List<String>> podInServiceOperations = podInServiceRedisTemplate
+            .opsForValue();
+        return podInServiceOperations.get(servicePrefix + String.valueOf(serviceId));
+    }
+
+    public void addService(int serviceId, String serviceName, String serviceType) {
+        ServiceRedis serviceRedis = getServiceById(serviceId);
+        if (serviceRedis != null) {
+            System.out.println("对应的service已存在");
+            return;
+        }
+        serviceRedis = new ServiceRedis(serviceId, serviceName, serviceType);
+        ValueOperations<String, ServiceRedis> serviceRedisoperations = this.serviceRedisTemplate
+            .opsForValue();
+        serviceRedisoperations.set(String.valueOf(serviceId), serviceRedis);
+    }
+
+    public void deleteService(int serviceId) {
+        ServiceRedis serviceRedis = getServiceById(serviceId);
+        if (serviceRedis == null) {
+            return;
+        }
+        this.serviceRedisTemplate.delete(String.valueOf(serviceId));
+        this.podInServiceRedisTemplate.delete(servicePrefix + String.valueOf(serviceId));
+    }
+
+    public void addPod(String podName, double cpuUsage, double memUsage, String address,
+                       int serviceId) {
         //        //  mysql实现版本
         //        if (this.podsMap.containsKey(pod.getPodName()))
         //            System.out.println("已存在pod");
         //        else
         //            this.podsMap.put(pod.getPodName(), pod);
-        ValueOperations<String, PodRedis> valueOperations = this.podRedisTemplate.opsForValue();
-        if (valueOperations.get(podRedis.getPodName()) != null)
+        if (getServiceById(serviceId) == null)
+            return;
+
+        PodRedis podRedis = new PodRedis(podName, cpuUsage, memUsage, address, serviceId);
+        ValueOperations<String, PodRedis> PodOperations = this.podRedisTemplate.opsForValue();
+        if (PodOperations.get(podRedis.getPodName()) != null)
             System.out.println("已存在pod");
-        else
-            valueOperations.set(podRedis.getPodName(), podRedis);
+        else {
+            PodOperations.set(podRedis.getPodName(), podRedis);
+            addPodToService(podRedis.getPodName(), serviceId);
+        }
     }
 
-    public void deletePod(PodRedis podRedis) {
+    public void deletePod(String podName) {
         //        //  mysql实现版本
         //        if (this.podsMap.containsKey(pod.getPodName()))
         //            this.podsMap.remove(pod.getPodName());
-        ValueOperations<String, PodRedis> valueOperations = this.podRedisTemplate.opsForValue();
-        if (valueOperations.get(podRedis.getPodName()) == null)
-            System.out.println("不存在pod");
+        PodRedis podRedis = getPodByName(podName);
+        if (podRedis == null)
+            return;
+        else {
+            this.podRedisTemplate.delete(podName);
+            List<String> pod = getPodListByServiceId(podRedis.getServiceId());
+            if (pod != null)
+                getPodListByServiceId(podRedis.getServiceId()).remove(pod.indexOf(podName));
+        }
+    }
+
+    public void addPodToService(String podName, int serviceId) {
+        ValueOperations<String, List<String>> podInServiceOperations = podInServiceRedisTemplate
+            .opsForValue();
+        if (getServiceById(serviceId) == null)
+            return;
+
+        if (getPodByName(podName) == null)
+            return;
+        List<String> pod = podInServiceOperations.get(servicePrefix + String.valueOf(serviceId));
+        if (pod == null) {
+            pod = new Vector<>();
+            pod.add(podName);
+            podInServiceOperations.set(servicePrefix + String.valueOf(serviceId), pod);
+        } else if (pod.contains(podName))
+            System.out.println("该pod已在该service内");
         else
-            this.podRedisTemplate.delete(podRedis.getPodName());
+            podInServiceOperations.get(servicePrefix + String.valueOf(serviceId)).add(podName);
+    }
+
+    public void addRequest(String requestPath, int serviceId, String method, double cpuCost,
+                           double memCost, double timeCost) {
+        RequestRedis requestRedis = getRequestByPath(requestPath);
+        ServiceRedis serviceRedis = getServiceById(serviceId);
+        if (serviceRedis == null)
+            return;
+        ValueOperations<String, RequestRedis> requestRedisoperations = this.requestRedisTemplate
+            .opsForValue();
+        if (requestRedis == null) {
+            requestRedis = new RequestRedis(requestPath, serviceId, method, cpuCost, memCost,
+                timeCost);
+            requestRedisoperations.set(requestPath, requestRedis);
+        }
+        return;
+    }
+
+    public void deleteRequest(String requestPath) {
+        RequestRedis requestRedis = getRequestByPath(requestPath);
+        if (requestRedis == null)
+            return;
+        this.requestRedisTemplate.delete(requestPath);
     }
 
     //    public void flushPod() {

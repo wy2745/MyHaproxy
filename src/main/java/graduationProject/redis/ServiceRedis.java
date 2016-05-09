@@ -11,6 +11,12 @@ public class ServiceRedis implements Serializable {
 
     private String            serviceType;
 
+    public ServiceRedis(int serviceId, String serviceName, String serviceType) {
+        this.serviceId = serviceId;
+        this.serviceName = serviceName;
+        this.serviceType = serviceType;
+    }
+
     public int getServiceId() {
         return serviceId;
     }

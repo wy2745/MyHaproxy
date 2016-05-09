@@ -17,6 +17,15 @@ public class PodRedis implements Serializable {
 
     private int               serviceId;
 
+    public PodRedis(String podName, double cpuUsage, double memUsage, String address,
+                    int serviceId) {
+        this.podName = podName;
+        this.cpuUsage = cpuUsage;
+        this.memUsage = memUsage;
+        this.address = address;
+        this.serviceId = serviceId;
+    }
+
     public String getPodName() {
         return podName;
     }

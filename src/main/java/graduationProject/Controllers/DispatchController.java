@@ -30,9 +30,13 @@ public class DispatchController extends BaseController {
     @Autowired
     private DispatchService dispatchService;
 
-    @RequestMapping(value = "/testRedis", method = RequestMethod.GET)
-    public void testredis() {
-        dispatchService.testRedis();
+    @RequestMapping(value = "/testRedis", method = { RequestMethod.GET, RequestMethod.POST })
+    public void testredis(HttpServletRequest httpServletRequest,
+                          HttpServletResponse httpServletResponse) {
+        //        dispatchService.deleteForTest();
+        dispatchService.generateForTest();
+        dispatchService.dispatchRequest(httpServletRequest, httpServletResponse, "random");
+        dispatchService.deleteForTest();
     }
 
     @RequestMapping(value = "/redirect", method = { RequestMethod.GET, RequestMethod.POST })
@@ -55,7 +59,7 @@ public class DispatchController extends BaseController {
             }
         } else {
             httpServletResponse.setStatus(307);
-            httpServletResponse.addHeader("Location", "http://zui.ms/api/user/users/");
+            httpServletResponse.addHeader("Location", "http://zui.ms/api/user/users");
         }
     }
 }

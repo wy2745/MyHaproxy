@@ -6,8 +6,6 @@ public class RequestRedis implements Serializable {
 
     private static final long serialVersionUID = -1L;
 
-    private int               requestId;
-
     private String            requestPath;
 
     private int               serviceId;
@@ -20,12 +18,14 @@ public class RequestRedis implements Serializable {
 
     private double            timeCost;
 
-    public int getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(int requestId) {
-        this.requestId = requestId;
+    public RequestRedis(String requestPath, int serviceId, String method, double cpuCost,
+                        double memCost, double timeCost) {
+        this.requestPath = requestPath;
+        this.serviceId = serviceId;
+        this.method = method;
+        this.cpuCost = cpuCost;
+        this.memCost = memCost;
+        this.timeCost = timeCost;
     }
 
     public String getRequestPath() {
