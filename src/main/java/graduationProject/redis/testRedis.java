@@ -1,4 +1,4 @@
-package graduationProject.Domain;
+package graduationProject.redis;
 
 import java.io.Serializable;
 
