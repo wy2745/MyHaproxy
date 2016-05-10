@@ -119,6 +119,7 @@ public class DispatchService extends BaseService {
 
     private void forwardRequest(HttpServletRequest httpServletRequest,
                                 HttpServletResponse httpServletResponse, String url) {
+        System.out.println("choice  the url: " + url);
         String method = httpServletRequest.getMethod();
         if (method.equals("GET")) {
             try {
