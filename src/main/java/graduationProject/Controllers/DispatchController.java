@@ -5,7 +5,6 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.hyperic.sigar.SigarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,25 +29,34 @@ public class DispatchController extends BaseController {
     @Autowired
     private DispatchService dispatchService;
 
+    @RequestMapping(value = "/generate", method = RequestMethod.GET)
+    public void Generate() {
+        dispatchService.generateForTest();
+    }
+
+    @RequestMapping(value = "/delete", method = RequestMethod.GET)
+    public void Delete() {
+        dispatchService.deleteForTest();
+    }
+
+    @RequestMapping(value = "/javapath", method = RequestMethod.GET)
+    public void javapath() {
+        System.out.println(System.getProperty("java.library.path"));
+    }
+
     @RequestMapping(value = "/testRedis", method = { RequestMethod.GET, RequestMethod.POST })
     public void testredis(HttpServletRequest httpServletRequest,
                           HttpServletResponse httpServletResponse) {
         //        dispatchService.deleteForTest();
-        dispatchService.generateForTest();
         dispatchService.dispatchRequest(httpServletRequest, httpServletResponse, "random");
-        dispatchService.deleteForTest();
+
     }
 
     @RequestMapping(value = "/redirect", method = { RequestMethod.GET, RequestMethod.POST })
     public void redirect(HttpServletRequest httpServletRequest,
                          HttpServletResponse httpServletResponse) {
-        try {
-            //System.out.println(System.getProperty("java.library.path"));
-            dispatchService.memory();
-            dispatchService.cpu();
-        } catch (SigarException e1) {
-            System.out.println(e1);
-        }
+        //System.out.println(System.getProperty("java.library.path"));
+
         System.out.println(dispatchService.getRequestPath(httpServletRequest));
         if (httpServletRequest.getMethod().equals("GET")) {
             try {

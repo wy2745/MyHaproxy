@@ -132,8 +132,8 @@ public class DispatchService extends BaseService {
             System.out.println("method错误");
             return;
         }
-        ServiceRedis serviceRedis = getServiceById(requestRedis.getServiceId());
-        String desination = pick(requestRedis, serviceRedis, mode);
+        //ServiceRedis serviceRedis = getServiceById(requestRedis.getServiceId());
+        String desination = pick(requestRedis, requestRedis.getServiceId(), mode);
         forwardRequest(httpServletRequest, httpServletResponse,
             this.podRedisTemplate.opsForValue().get(desination).getAddress() + requestPath);
     }
@@ -144,7 +144,7 @@ public class DispatchService extends BaseService {
         return (random.nextInt(max) + start) % max;
     }
 
-    private String pick(RequestRedis requestRedis, ServiceRedis serviceRedis, String mode) {
+    private String pick(RequestRedis requestRedis, int serviceId, String mode) {
         //        //  mysql实现版本
         //        if (mode.equals("random")) {
         //            int max = PodInService.get(service.getServiceId()).size();
@@ -154,11 +154,10 @@ public class DispatchService extends BaseService {
         //        return null;
 
         if (mode.equals("random")) {
-            ValueOperations<String, List<String>> valueOperations = podInServiceRedisTemplate
-                .opsForValue();
-            int max = getPodListByServiceId(serviceRedis.getServiceId()).size();
+            List<String> pod = getPodListByServiceId(serviceId);
+            int max = pod.size();
             int target = generateRanNum(max);
-            return getPodListByServiceId(serviceRedis.getServiceId()).get(target);
+            return pod.get(target);
         }
         return null;
     }
