@@ -60,15 +60,24 @@ public class DispatchService extends BaseService {
 
     public void generateForTest() {
         addService(1, "pupu", "a");
-        addPod("haha", 1, 1, "http://zui.ms/api/user", 1);
-
+        addPod("pod1", 1, 1, "http://192.168.1.162", 1);
+        addPod("pod2", 1, 1, "http://192.168.1.163", 1);
+        addPod("pod3", 1, 1, "http://192.168.1.164", 1);
+        addPod("pod4", 1, 1, "http://192.168.1.165", 1);
+        addPod("pod5", 1, 1, "http://192.168.1.166", 1);
+        addPod("pod6", 1, 1, "http://192.168.1.167", 1);
         addRequest("/users/images", 1, "GET", 1, 1, 1);
         addRequest("/users", 1, "POST", 1, 1, 1);
 
     }
 
     public void deleteForTest() {
-        deletePod("haha");
+        deletePod("pod1");
+        deletePod("pod2");
+        deletePod("pod3");
+        deletePod("pod4");
+        deletePod("pod5");
+        deletePod("pod6");
         deleteRequest("/users/images");
         deleteRequest("/users");
         deleteService(1);
@@ -400,5 +409,28 @@ public class DispatchService extends BaseService {
         System.out.println("CPU当前错误率:    " + CpuPerc.format(cpu.getNice()));//
         System.out.println("CPU当前空闲率:    " + CpuPerc.format(cpu.getIdle()));// 当前空闲率
         System.out.println("CPU总的使用率:    " + CpuPerc.format(cpu.getCombined()));// 总的使用率
+    }
+
+    public void testRedis() {
+        ValueOperations<String, PodRedis> podValueOperations = this.podRedisTemplate.opsForValue();
+        System.out.println("test for redix across machine");
+        System.out.println("PodName: " + podValueOperations.get("pod1").getPodName() + ",CPU: "
+                           + podValueOperations.get("pod1").getCpuUsage() + ",Mem: "
+                           + podValueOperations.get("pod1").getMemUsage());
+        System.out.println("PodName: " + podValueOperations.get("pod2").getPodName() + ",CPU: "
+                           + podValueOperations.get("pod2").getCpuUsage() + ",Mem: "
+                           + podValueOperations.get("pod2").getMemUsage());
+        System.out.println("PodName: " + podValueOperations.get("pod3").getPodName() + ",CPU: "
+                           + podValueOperations.get("pod3").getCpuUsage() + ",Mem: "
+                           + podValueOperations.get("pod3").getMemUsage());
+        System.out.println("PodName: " + podValueOperations.get("pod4").getPodName() + ",CPU: "
+                           + podValueOperations.get("pod4").getCpuUsage() + ",Mem: "
+                           + podValueOperations.get("pod4").getMemUsage());
+        System.out.println("PodName: " + podValueOperations.get("pod5").getPodName() + ",CPU: "
+                           + podValueOperations.get("pod5").getCpuUsage() + ",Mem: "
+                           + podValueOperations.get("pod5").getMemUsage());
+        System.out.println("PodName: " + podValueOperations.get("pod6").getPodName() + ",CPU: "
+                           + podValueOperations.get("pod6").getCpuUsage() + ",Mem: "
+                           + podValueOperations.get("pod6").getMemUsage());
     }
 }

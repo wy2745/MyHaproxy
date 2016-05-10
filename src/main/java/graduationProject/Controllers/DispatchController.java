@@ -52,6 +52,11 @@ public class DispatchController extends BaseController {
 
     }
 
+    @RequestMapping(value = "/testRedisInUbuntu", method = RequestMethod.GET)
+    public void test() {
+        dispatchService.testRedis();
+    }
+
     @RequestMapping(value = "/testRedis", method = { RequestMethod.GET, RequestMethod.POST })
     public void testredis(HttpServletRequest httpServletRequest,
                           HttpServletResponse httpServletResponse) {
