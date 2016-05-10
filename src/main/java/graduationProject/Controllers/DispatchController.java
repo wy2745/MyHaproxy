@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.hyperic.sigar.SigarException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +43,13 @@ public class DispatchController extends BaseController {
     @RequestMapping(value = "/javapath", method = RequestMethod.GET)
     public void javapath() {
         System.out.println(System.getProperty("java.library.path"));
+        try {
+            dispatchService.memory();
+            dispatchService.cpu();
+        } catch (SigarException e) {
+            logger.error("", e);
+        }
+
     }
 
     @RequestMapping(value = "/testRedis", method = { RequestMethod.GET, RequestMethod.POST })
