@@ -20,15 +20,15 @@ import org.hyperic.sigar.SigarException;
 import org.hyperic.sigar.Swap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 
 import graduationProject.Dao.PodDAO;
 import graduationProject.Dao.RequestDAO;
 import graduationProject.Dao.ServiceDAO;
 import graduationProject.Domain.Pod;
 import graduationProject.Domain.Request;
+import graduationProject.Domain.Service;;
 
-@Service
+@org.springframework.stereotype.Service
 public class DispatchService extends BaseService {
 
     //    @Autowired
@@ -46,23 +46,23 @@ public class DispatchService extends BaseService {
     //private String                                         servicePrefix = "Service:";
 
     @Autowired
-    private PodDAO                                         podDAO;
+    private PodDAO                     podDAO;
 
     @Autowired
-    private RequestDAO                                     requestDAO;
+    private RequestDAO                 requestDAO;
 
     @Autowired
-    private ServiceDAO                                     serviceDAO;
+    private ServiceDAO                 serviceDAO;
 
-    private Map<Integer, graduationProject.Domain.Service> serviceMap;
+    private Map<Integer, Service>      serviceMap;
 
-    private Map<Integer, List<String>>                     PodInService;
+    private Map<Integer, List<String>> PodInService;
 
-    private Map<String, Pod>                               podsMap;
+    private Map<String, Pod>           podsMap;
 
-    private Map<String, Request>                           requestMap;
+    private Map<String, Request>       requestMap;
 
-    private double                                         choiceRate = 1 / 3;
+    private double                     choiceRate = 1 / 3;
 
     public void generateForTest() {
         addService(1, "pupu", "a");
@@ -92,13 +92,13 @@ public class DispatchService extends BaseService {
     //每过30秒读取一遍数据库进行刷新，实际测试的时候，可以只对pod的状态进行刷新（因为service，pod，request相对不变）
     @Scheduled(initialDelay = 1000, fixedRate = 30000)
     public void init() {
-        Map<Integer, graduationProject.Domain.Service> serviceMap2 = new Hashtable<Integer, graduationProject.Domain.Service>();
+        Map<Integer, Service> serviceMap2 = new Hashtable<Integer, Service>();
         Map<Integer, List<String>> PodInService2 = new Hashtable<>();
         Map<String, Pod> podsMap2 = new Hashtable<>();
         Map<String, Request> requestMap2 = new HashMap<>();
 
-        Iterable<graduationProject.Domain.Service> services = serviceDAO.findAll();
-        for (graduationProject.Domain.Service service : services)
+        Iterable<Service> services = serviceDAO.findAll();
+        for (Service service : services)
             serviceMap2.put(service.getServiceId(), service);
 
         Iterable<Pod> pods = podDAO.findAll();
@@ -261,7 +261,7 @@ public class DispatchService extends BaseService {
         //        return requestRedis;
     }
 
-    public graduationProject.Domain.Service getServiceById(int serviceId) {
+    public Service getServiceById(int serviceId) {
         //  mysql实现版本
         return this.serviceMap.get(serviceId);
 
@@ -318,8 +318,7 @@ public class DispatchService extends BaseService {
     public void addService(int serviceId, String serviceName, String serviceType) {
 
         //mysql实现版本
-        graduationProject.Domain.Service service = new graduationProject.Domain.Service(serviceId,
-            serviceName, serviceType);
+        Service service = new Service(serviceId, serviceName, serviceType);
         if (getServiceById(serviceId) != null) {
             System.out.println("service已存在");
             return;
@@ -341,7 +340,7 @@ public class DispatchService extends BaseService {
 
     public void deleteService(int serviceId) {
 
-        graduationProject.Domain.Service service = serviceDAO.findByServiceId(serviceId);
+        Service service = serviceDAO.findByServiceId(serviceId);
         if (service == null)
             return;
         serviceDAO.delete(service);
@@ -495,9 +494,9 @@ public class DispatchService extends BaseService {
     }
 
     public void flushService() {
-        Map<Integer, graduationProject.Domain.Service> ServiceMap2 = new Hashtable<>();
-        Iterable<graduationProject.Domain.Service> services = serviceDAO.findAll();
-        for (graduationProject.Domain.Service service : services) {
+        Map<Integer, Service> ServiceMap2 = new Hashtable<>();
+        Iterable<Service> services = serviceDAO.findAll();
+        for (Service service : services) {
             ServiceMap2.put(service.getServiceId(), service);
         }
         this.serviceMap = ServiceMap2;
