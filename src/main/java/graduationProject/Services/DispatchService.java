@@ -366,7 +366,13 @@ public class DispatchService extends BaseService {
     public void addPod(String podName, double cpuUsage, double memUsage, String address,
                        int serviceId) {
         //  mysql实现版本
-        Pod pod = new Pod(podName, cpuUsage, memUsage, address, serviceId);
+        //Pod pod = new Pod(podName, cpuUsage, memUsage, address, serviceId);
+        Pod pod = new Pod();
+        pod.setAddress(address);
+        pod.setCpuUsage(cpuUsage);
+        pod.setMemUsage(memUsage);
+        pod.setPodName(podName);
+        pod.setServiceId(serviceId);
         if (getPodByName(podName) != null) {
             System.out.println("已存在pod");
             return;
@@ -442,7 +448,14 @@ public class DispatchService extends BaseService {
             System.out.println("已存在对应的request或对应的service不存在");
             return;
         }
-        request = new Request(requestPath, serviceId, method, cpuCost, memCost, timeCost);
+        //request = new Request(requestPath, serviceId, method, cpuCost, memCost, timeCost);
+        request = new Request();
+        request.setCpuCost(cpuCost);
+        request.setMemCost(memCost);
+        request.setMethod(method);
+        request.setRequestPath(requestPath);
+        request.setServiceId(serviceId);
+        request.setTimeCost(timeCost);
         requestDAO.save(request);
         flushRequestLog();
         //        //redis实现版本

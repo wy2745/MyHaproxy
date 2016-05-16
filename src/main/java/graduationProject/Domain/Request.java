@@ -37,15 +37,15 @@ public class Request {
     @Column(name = "timeCost")
     private double timeCost;
 
-    public Request(String requestPath, int serviceId, String method, double cpuCost, double memCost,
-                   double timeCost) {
-        this.requestPath = requestPath;
-        this.serviceId = serviceId;
-        this.method = method;
-        this.cpuCost = cpuCost;
-        this.memCost = memCost;
-        this.timeCost = timeCost;
-    }
+    //    public Request(String requestPath, int serviceId, String method, double cpuCost, double memCost,
+    //                   double timeCost) {
+    //        this.requestPath = requestPath;
+    //        this.serviceId = serviceId;
+    //        this.method = method;
+    //        this.cpuCost = cpuCost;
+    //        this.memCost = memCost;
+    //        this.timeCost = timeCost;
+    //    }
 
     public int getRequestId() {
         return requestId;
