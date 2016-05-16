@@ -318,7 +318,11 @@ public class DispatchService extends BaseService {
     public void addService(int serviceId, String serviceName, String serviceType) {
 
         //mysql实现版本
-        Service service = new Service(serviceId, serviceName, serviceType);
+        //Service service = new Service(serviceId, serviceName, serviceType);
+        Service service = new Service();
+        service.setServiceId(serviceId);
+        service.setServiceName(serviceName);
+        service.setServiceType(serviceType);
         if (getServiceById(serviceId) != null) {
             System.out.println("service已存在");
             return;

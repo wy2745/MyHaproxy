@@ -27,11 +27,11 @@ public class Service {
 
     //    private Map<String, Pod> pods;
 
-    public Service(int serviceId, String serviceName, String serviceType) {
-        this.serviceId = serviceId;
-        this.serviceName = serviceName;
-        this.serviceType = serviceType;
-    }
+    //    public Service(int serviceId, String serviceName, String serviceType) {
+    //        this.serviceId = serviceId;
+    //        this.serviceName = serviceName;
+    //        this.serviceType = serviceType;
+    //    }
 
     public int getServiceId() {
         return serviceId;
@@ -41,20 +41,20 @@ public class Service {
         this.serviceId = serviceId;
     }
 
-    public String getServiceType() {
-        return serviceType;
-    }
-
-    public void setServiceType(String serviceType) {
-        this.serviceType = serviceType;
-    }
-
     public String getServiceName() {
         return serviceName;
     }
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public String getServiceType() {
+        return serviceType;
+    }
+
+    public void setServiceType(String serviceType) {
+        this.serviceType = serviceType;
     }
 
     //    public void setPods(Map<String, Pod> pods) {
