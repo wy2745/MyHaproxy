@@ -83,4 +83,12 @@ public class DispatchController extends BaseController {
             httpServletResponse.addHeader("Location", "http://zui.ms/api/user/users");
         }
     }
+
+    @RequestMapping(value = "/proxy", method = { RequestMethod.GET, RequestMethod.POST })
+    public void proxy(HttpServletRequest httpServletRequest,
+                      HttpServletResponse httpServletResponse) {
+        //System.out.println(System.getProperty("java.library.path"));
+
+        dispatchService.dispatchRequest(httpServletRequest, httpServletResponse, "random");
+    }
 }
