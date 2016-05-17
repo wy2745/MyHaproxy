@@ -90,7 +90,7 @@ public class DispatchService extends BaseService {
     }
 
     //每过30秒读取一遍数据库进行刷新，实际测试的时候，可以只对pod的状态进行刷新（因为service，pod，request相对不变）
-    @Scheduled(initialDelay = 1000, fixedRate = 30000)
+    @Scheduled(initialDelay = 1000, fixedRate = 1000)
     public void init() {
         Map<Integer, Service> serviceMap2 = new Hashtable<Integer, Service>();
         Map<Integer, List<String>> PodInService2 = new Hashtable<>();
@@ -127,11 +127,12 @@ public class DispatchService extends BaseService {
     //将当前的请求根据类型（GET或POST）进行转发
     private void forwardRequest(HttpServletRequest httpServletRequest,
                                 HttpServletResponse httpServletResponse, String url) {
-        System.out.println("choice  the url: " + url);
+        //System.out.println("choice  the url: " + url);
         String method = httpServletRequest.getMethod();
         if (method.equals("GET")) {
             try {
                 httpServletResponse.sendRedirect(url + "?" + httpServletRequest.getQueryString());
+                //System.out.println(httpServletRequest.getQueryString());
             } catch (IOException e) {
                 //logger.error("", e);
             }
@@ -147,6 +148,7 @@ public class DispatchService extends BaseService {
 
         //mysql实现方案
         String method = httpServletRequest.getMethod();
+        //System.out.println("method:     " + method);
         String requestPath = getRequestPath(httpServletRequest);
         Request request = getRequestByPath(requestPath);
         if (!method.equals(request.getMethod())) {
@@ -294,7 +296,15 @@ public class DispatchService extends BaseService {
                 String str = reader.readLine();
                 while (str != null) {
                     if (str.contains("RequestPath")) {
-                        return str.split("\"")[3];
+                        String[] strings = str.split("\"");
+                        int size = strings.length;
+                        int i = 0;
+                        while (i < size) {
+                            if (strings[i].equals("RequestPath"))
+                                break;
+                            i++;
+                        }
+                        return strings[i + 2];
                     }
                     str = reader.readLine();
 
