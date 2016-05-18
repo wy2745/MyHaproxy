@@ -42,7 +42,7 @@ public class DispatchController extends BaseController {
 
     @RequestMapping(value = "/javapath", method = RequestMethod.GET)
     public void javapath() {
-        System.out.println(System.getProperty("java.library.path"));
+        //System.out.println(System.getProperty("java.library.path"));
         try {
             dispatchService.memory();
             dispatchService.cpu();

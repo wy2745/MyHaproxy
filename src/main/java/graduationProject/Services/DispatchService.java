@@ -121,18 +121,18 @@ public class DispatchService extends BaseService {
         PodInService = PodInService2;
         podsMap = podsMap2;
         requestMap = requestMap2;
-        System.out.println("初始化成功");
+        logger.info("初始化成功");
     }
 
     //将当前的请求根据类型（GET或POST）进行转发
     private void forwardRequest(HttpServletRequest httpServletRequest,
                                 HttpServletResponse httpServletResponse, String url) {
-        //System.out.println("choice  the url: " + url);
+        //logger.info("choice  the url: " + url);
         String method = httpServletRequest.getMethod();
         if (method.equals("GET")) {
             try {
                 httpServletResponse.sendRedirect(url + "?" + httpServletRequest.getQueryString());
-                //System.out.println(httpServletRequest.getQueryString());
+                //logger.info(httpServletRequest.getQueryString());
             } catch (IOException e) {
                 //logger.error("", e);
             }
@@ -148,15 +148,15 @@ public class DispatchService extends BaseService {
 
         //mysql实现方案
         String method = httpServletRequest.getMethod();
-        //System.out.println("method:     " + method);
+        //logger.info("method:     " + method);
         String requestPath = getRequestPath(httpServletRequest);
         Request request = getRequestByPath(requestPath);
         if (!method.equals(request.getMethod())) {
-            System.out.println("method错误");
+            logger.info("method错误");
             return;
         }
         String desination = pick(request, mode);
-        System.out.println("dispatch request to pod: " + desination);
+        logger.info("dispatch request to pod: " + desination);
         forwardRequest(httpServletRequest, httpServletResponse,
             getPodByName(desination).getAddress() + requestPath);
 
@@ -165,7 +165,7 @@ public class DispatchService extends BaseService {
         //        String requestPath = getRequestPath(httpServletRequest);
         //        RequestRedis requestRedis = getRequestByPath(requestPath);
         //        if (!method.equals(requestRedis.getMethod())) {
-        //            System.out.println("method错误");
+        //            logger.info("method错误");
         //            return;
         //        }
         //        //ServiceRedis serviceRedis = getServiceById(requestRedis.getServiceId());
@@ -259,7 +259,7 @@ public class DispatchService extends BaseService {
         //        //redis实现版本
         //        RequestRedis requestRedis = this.requestRedisTemplate.opsForValue().get(requestPath);
         //        if (requestRedis == null)
-        //            System.out.println("不存在对应的请求信息");
+        //            logger.info("不存在对应的请求信息");
         //        return requestRedis;
     }
 
@@ -271,7 +271,7 @@ public class DispatchService extends BaseService {
         //        ServiceRedis serviceRedis = this.serviceRedisTemplate.opsForValue()
         //            .get(String.valueOf(serviceId));
         //        if (serviceRedis == null)
-        //            System.out.println("不存在对应的service");
+        //            logger.info("不存在对应的service");
         //        return serviceRedis;
     }
 
@@ -282,7 +282,7 @@ public class DispatchService extends BaseService {
         //        //redis实现版本
         //        PodRedis podRedis = this.podRedisTemplate.opsForValue().get(podName);
         //        if (podRedis == null)
-        //            System.out.println("pod不存在");
+        //            logger.info("pod不存在");
         //        return podRedis;
     }
 
@@ -334,7 +334,7 @@ public class DispatchService extends BaseService {
         service.setServiceName(serviceName);
         service.setServiceType(serviceType);
         if (getServiceById(serviceId) != null) {
-            System.out.println("service已存在");
+            logger.info("service已存在");
             return;
         }
         this.serviceDAO.save(service);
@@ -343,7 +343,7 @@ public class DispatchService extends BaseService {
         //        //redis实现版本
         //        ServiceRedis serviceRedis = getServiceById(serviceId);
         //        if (serviceRedis != null) {
-        //            System.out.println("对应的service已存在");
+        //            logger.info("对应的service已存在");
         //            return;
         //        }
         //        serviceRedis = new ServiceRedis(serviceId, serviceName, serviceType);
@@ -384,11 +384,11 @@ public class DispatchService extends BaseService {
         pod.setPodName(podName);
         pod.setServiceId(serviceId);
         if (getPodByName(podName) != null) {
-            System.out.println("已存在pod");
+            logger.info("已存在pod");
             return;
         }
         if (getServiceById(serviceId) != null) {
-            System.out.println("不存在对应的service");
+            logger.info("不存在对应的service");
             return;
         }
         podDAO.save(pod);
@@ -401,7 +401,7 @@ public class DispatchService extends BaseService {
         //        PodRedis podRedis = new PodRedis(podName, cpuUsage, memUsage, address, serviceId);
         //        ValueOperations<String, PodRedis> PodOperations = this.podRedisTemplate.opsForValue();
         //        if (PodOperations.get(podRedis.getPodName()) != null)
-        //            System.out.println("已存在pod");
+        //            logger.info("已存在pod");
         //        else {
         //            PodOperations.set(podRedis.getPodName(), podRedis);
         //            addPodToService(podRedis.getPodName(), serviceId);
@@ -412,7 +412,7 @@ public class DispatchService extends BaseService {
         //  mysql实现版本
         Pod pod = podDAO.findByPodName(podName);
         if (pod == null) {
-            System.out.println("不存在对应的pod");
+            logger.info("不存在对应的pod");
             return;
         }
         podDAO.delete(pod);
@@ -445,7 +445,7 @@ public class DispatchService extends BaseService {
     //        //            pod.add(podName);
     //        //            podInServiceOperations.set(servicePrefix + String.valueOf(serviceId), pod);
     //        //        } else if (pod.contains(podName))
-    //        //            System.out.println("该pod已在该service内");
+    //        //            logger.info("该pod已在该service内");
     //        //        else
     //        //            podInServiceOperations.get(servicePrefix + String.valueOf(serviceId)).add(podName);
     //    }
@@ -455,7 +455,7 @@ public class DispatchService extends BaseService {
 
         Request request = requestDAO.findByRequestPath(requestPath);
         if (request != null || (serviceDAO.findByServiceId(serviceId) == null)) {
-            System.out.println("已存在对应的request或对应的service不存在");
+            logger.info("已存在对应的request或对应的service不存在");
             return;
         }
         //request = new Request(requestPath, serviceId, method, cpuCost, memCost, timeCost);
@@ -487,7 +487,7 @@ public class DispatchService extends BaseService {
 
         Request request = requestDAO.findByRequestPath(requestPath);
         if (request == null) {
-            System.out.println("不存在对应的request");
+            logger.info("不存在对应的request");
             return;
         }
         requestDAO.delete(request);
@@ -517,7 +517,7 @@ public class DispatchService extends BaseService {
         }
         this.podsMap = podsMaps2;
         this.PodInService = PodInService2;
-        System.out.println("成功刷新所有pod的状态");
+        logger.info("成功刷新所有pod的状态");
     }
 
     public void flushService() {
@@ -527,7 +527,7 @@ public class DispatchService extends BaseService {
             ServiceMap2.put(service.getServiceId(), service);
         }
         this.serviceMap = ServiceMap2;
-        System.out.println("成功刷新所有service的状态");
+        logger.info("成功刷新所有service的状态");
     }
 
     public void flushRequestLog() {
@@ -537,25 +537,25 @@ public class DispatchService extends BaseService {
             requestMap2.put(request.getRequestPath(), request);
         }
         this.requestMap = requestMap2;
-        System.out.println("成功刷新所有request的状态");
+        logger.info("成功刷新所有request的状态");
     }
 
     public void memory() throws SigarException {
         Sigar sigar = new Sigar();
         Mem mem = sigar.getMem();
         // 内存总量
-        System.out.println("内存总量:    " + mem.getTotal() / 1024L + "K av");
+        logger.info("内存总量:    " + mem.getTotal() / 1024L + "K av");
         // 当前内存使用量
-        System.out.println("当前内存使用量:    " + mem.getUsed() / 1024L + "K used");
+        logger.info("当前内存使用量:    " + mem.getUsed() / 1024L + "K used");
         // 当前内存剩余量
-        System.out.println("当前内存剩余量:    " + mem.getFree() / 1024L + "K free");
+        logger.info("当前内存剩余量:    " + mem.getFree() / 1024L + "K free");
         Swap swap = sigar.getSwap();
         // 交换区总量
-        System.out.println("交换区总量:    " + swap.getTotal() / 1024L + "K av");
+        logger.info("交换区总量:    " + swap.getTotal() / 1024L + "K av");
         // 当前交换区使用量
-        System.out.println("当前交换区使用量:    " + swap.getUsed() / 1024L + "K used");
+        logger.info("当前交换区使用量:    " + swap.getUsed() / 1024L + "K used");
         // 当前交换区剩余量
-        System.out.println("当前交换区剩余量:    " + swap.getFree() / 1024L + "K free");
+        logger.info("当前交换区剩余量:    " + swap.getFree() / 1024L + "K free");
     }
 
     public void cpu() throws SigarException {
@@ -565,43 +565,43 @@ public class DispatchService extends BaseService {
         cpuList = sigar.getCpuPercList();
         for (int i = 0; i < infos.length; i++) {// 不管是单块CPU还是多CPU都适用
             CpuInfo info = infos[i];
-            System.out.println("第" + (i + 1) + "块CPU信息");
-            System.out.println("CPU的总量MHz:    " + info.getMhz());// CPU的总量MHz
-            System.out.println("CPU生产商:    " + info.getVendor());// 获得CPU的卖主，如：Intel
-            System.out.println("CPU类别:    " + info.getModel());// 获得CPU的类别，如：Celeron
-            System.out.println("CPU缓存数量:    " + info.getCacheSize());// 缓冲存储器数量
+            logger.info("第" + (i + 1) + "块CPU信息");
+            logger.info("CPU的总量MHz:    " + info.getMhz());// CPU的总量MHz
+            logger.info("CPU生产商:    " + info.getVendor());// 获得CPU的卖主，如：Intel
+            logger.info("CPU类别:    " + info.getModel());// 获得CPU的类别，如：Celeron
+            logger.info("CPU缓存数量:    " + info.getCacheSize());// 缓冲存储器数量
             printCpuPerc(cpuList[i]);
         }
     }
 
     private static void printCpuPerc(CpuPerc cpu) {
-        System.out.println("CPU用户使用率:    " + CpuPerc.format(cpu.getUser()));// 用户使用率
-        System.out.println("CPU系统使用率:    " + CpuPerc.format(cpu.getSys()));// 系统使用率
-        System.out.println("CPU当前等待率:    " + CpuPerc.format(cpu.getWait()));// 当前等待率
-        System.out.println("CPU当前错误率:    " + CpuPerc.format(cpu.getNice()));//
-        System.out.println("CPU当前空闲率:    " + CpuPerc.format(cpu.getIdle()));// 当前空闲率
-        System.out.println("CPU总的使用率:    " + CpuPerc.format(cpu.getCombined()));// 总的使用率
+        logger.info("CPU用户使用率:    " + CpuPerc.format(cpu.getUser()));// 用户使用率
+        logger.info("CPU系统使用率:    " + CpuPerc.format(cpu.getSys()));// 系统使用率
+        logger.info("CPU当前等待率:    " + CpuPerc.format(cpu.getWait()));// 当前等待率
+        logger.info("CPU当前错误率:    " + CpuPerc.format(cpu.getNice()));//
+        logger.info("CPU当前空闲率:    " + CpuPerc.format(cpu.getIdle()));// 当前空闲率
+        logger.info("CPU总的使用率:    " + CpuPerc.format(cpu.getCombined()));// 总的使用率
     }
 
     public void testRedis() {
         //                ValueOperations<String, PodRedis> podValueOperations = this.podRedisTemplate.opsForValue();
-        //                System.out.println("test for redix across machine");
-        //                System.out.println("PodName: " + podValueOperations.get("pod1").getPodName() + ",CPU: "
+        //                logger.info("test for redix across machine");
+        //                logger.info("PodName: " + podValueOperations.get("pod1").getPodName() + ",CPU: "
         //                                   + podValueOperations.get("pod1").getCpuUsage() + ",Mem: "
         //                                   + podValueOperations.get("pod1").getMemUsage());
-        //                System.out.println("PodName: " + podValueOperations.get("pod2").getPodName() + ",CPU: "
+        //                logger.info("PodName: " + podValueOperations.get("pod2").getPodName() + ",CPU: "
         //                                   + podValueOperations.get("pod2").getCpuUsage() + ",Mem: "
         //                                   + podValueOperations.get("pod2").getMemUsage());
-        //                System.out.println("PodName: " + podValueOperations.get("pod3").getPodName() + ",CPU: "
+        //                logger.info("PodName: " + podValueOperations.get("pod3").getPodName() + ",CPU: "
         //                                   + podValueOperations.get("pod3").getCpuUsage() + ",Mem: "
         //                                   + podValueOperations.get("pod3").getMemUsage());
-        //                System.out.println("PodName: " + podValueOperations.get("pod4").getPodName() + ",CPU: "
+        //                logger.info("PodName: " + podValueOperations.get("pod4").getPodName() + ",CPU: "
         //                                   + podValueOperations.get("pod4").getCpuUsage() + ",Mem: "
         //                                   + podValueOperations.get("pod4").getMemUsage());
-        //                System.out.println("PodName: " + podValueOperations.get("pod5").getPodName() + ",CPU: "
+        //                logger.info("PodName: " + podValueOperations.get("pod5").getPodName() + ",CPU: "
         //                                   + podValueOperations.get("pod5").getCpuUsage() + ",Mem: "
         //                                   + podValueOperations.get("pod5").getMemUsage());
-        //                System.out.println("PodName: " + podValueOperations.get("pod6").getPodName() + ",CPU: "
+        //                logger.info("PodName: " + podValueOperations.get("pod6").getPodName() + ",CPU: "
         //                                   + podValueOperations.get("pod6").getCpuUsage() + ",Mem: "
         //                                   + podValueOperations.get("pod6").getMemUsage());
     }
