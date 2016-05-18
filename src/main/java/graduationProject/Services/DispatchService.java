@@ -234,13 +234,13 @@ public class DispatchService extends BaseService {
         //  mysql实现版本
         if (mode.equals("random"))
             return randomPick(request.getServiceId());
-        // // randomPick 初始代码
-        // int max = PodInService.get(serviceId).size();
-        // int target = generateRanNum(max);
-        // //避免这个时候pod列表被刷新了
-        // return PodInService.get(serviceId).get(target);
-
-        return null;
+        return choicePick(request, getPodListByServiceId(request.getServiceId()).size(),
+            request.getServiceId(), mode);
+            // // randomPick 初始代码
+            // int max = PodInService.get(serviceId).size();
+            // int target = generateRanNum(max);
+            // //避免这个时候pod列表被刷新了
+            // return PodInService.get(serviceId).get(target)
 
         //        //redis实现版本
         //        if (mode.equals("random")) {

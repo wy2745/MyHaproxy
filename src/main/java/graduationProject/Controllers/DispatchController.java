@@ -57,11 +57,19 @@ public class DispatchController extends BaseController {
         dispatchService.testRedis();
     }
 
-    @RequestMapping(value = "/testRedis", method = { RequestMethod.GET, RequestMethod.POST })
-    public void testredis(HttpServletRequest httpServletRequest,
-                          HttpServletResponse httpServletResponse) {
+    @RequestMapping(value = "/testRandom", method = { RequestMethod.GET, RequestMethod.POST })
+    public void teestrandom(HttpServletRequest httpServletRequest,
+                            HttpServletResponse httpServletResponse) {
         //        dispatchService.deleteForTest();
         dispatchService.dispatchRequest(httpServletRequest, httpServletResponse, "random");
+
+    }
+
+    @RequestMapping(value = "/testChoice", method = { RequestMethod.GET, RequestMethod.POST })
+    public void testchoice(HttpServletRequest httpServletRequest,
+                           HttpServletResponse httpServletResponse) {
+        //        dispatchService.deleteForTest();
+        dispatchService.dispatchRequest(httpServletRequest, httpServletResponse, "choice1");
 
     }
 
