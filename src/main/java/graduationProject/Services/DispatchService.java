@@ -62,7 +62,7 @@ public class DispatchService extends BaseService {
 
     private Map<String, Request>       requestMap;
 
-    private double                     choiceRate = 1 / 3;
+    private double                     choiceRate = 1.0 / 3;
 
     public void generateForTest() {
         addService(1, "pupu", "a");
@@ -90,7 +90,7 @@ public class DispatchService extends BaseService {
     }
 
     //每过30秒读取一遍数据库进行刷新，实际测试的时候，可以只对pod的状态进行刷新（因为service，pod，request相对不变）
-    @Scheduled(initialDelay = 1000, fixedRate = 1000)
+    @Scheduled(initialDelay = 1000, fixedRate = 3000000)
     public void init() {
         Map<Integer, Service> serviceMap2 = new Hashtable<Integer, Service>();
         Map<Integer, List<String>> PodInService2 = new Hashtable<>();
@@ -181,11 +181,11 @@ public class DispatchService extends BaseService {
         return (random.nextInt(max) + start) % max;
     }
 
-    private List<Integer> generateRanNumList(int max, int choiceRate) {
+    private List<Integer> generateRanNumList(int max, double choiceRate) {
         List<Integer> numLst = new Vector<>();
         Random random = new Random();
         int start = random.nextInt(max);
-        int num = max * choiceRate;
+        int num = (int) (max * choiceRate);
         while (numLst.size() < num) {
             int target = (random.nextInt(max) + start) % max;
             if (numLst.contains(target))
@@ -211,6 +211,7 @@ public class DispatchService extends BaseService {
             double memScore = ((1 - pod.getMemUsage()) - request.getMemCost()) * 25;
             double cpuScore = ((1 - pod.getCpuUsage()) - request.getCpuCost()) * 25;
             double score = memScore + cpuScore;
+            logger.info(score + "  " + pod.getPodName());
             if (highestScore < score) {
                 highestScore = score;
                 podName = pod.getPodName();
@@ -220,7 +221,7 @@ public class DispatchService extends BaseService {
     }
 
     private String choicePick(Request request, int size, int serviceId, String mode) {
-        List<Integer> targetList = generateRanNumList(size, (int) choiceRate);
+        List<Integer> targetList = generateRanNumList(size, choiceRate);
         String target = "pod1";
         if (mode.equals("choice1"))
             target = getBetterPod1(request, targetList, serviceId);
