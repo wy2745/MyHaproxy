@@ -90,7 +90,7 @@ public class DispatchService extends BaseService {
     }
 
     //每过30秒读取一遍数据库进行刷新，实际测试的时候，可以只对pod的状态进行刷新（因为service，pod，request相对不变）
-    @Scheduled(initialDelay = 1000, fixedRate = 3000000)
+    @Scheduled(initialDelay = 1000, fixedRate = 1000)
     public void init() {
         Map<Integer, Service> serviceMap2 = new Hashtable<Integer, Service>();
         Map<Integer, List<String>> PodInService2 = new Hashtable<>();
