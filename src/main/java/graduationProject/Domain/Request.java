@@ -22,6 +22,9 @@ public class Request {
     @Column(name = "requestPath")
     private String requestPath;
 
+    @Column(name = "path")
+    private String path;
+
     @Column(name = "serviceId")
     private int    serviceId;
 
@@ -101,6 +104,14 @@ public class Request {
 
     public void setServiceId(int serviceId) {
         this.serviceId = serviceId;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
 }

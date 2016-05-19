@@ -158,7 +158,7 @@ public class DispatchService extends BaseService {
         String desination = pick(request, mode);
         logger.info("dispatch request to pod: " + desination);
         forwardRequest(httpServletRequest, httpServletResponse,
-            getPodByName(desination).getAddress() + requestPath);
+            getPodByName(desination).getAddress() + request.getPath());
 
         //        //redis实现方案
         //        String method = httpServletRequest.getMethod();
