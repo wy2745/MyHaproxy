@@ -27,6 +27,9 @@ public class Pod {
     @Column(name = "serviceId")
     private int    serviceId;
 
+    @Column(name = "connection")
+    private int    connection;
+
     //    public Pod(String podName, double cpuUsage, double memUsage, String address, int serviceId) {
     //        this.podName = podName;
     //        this.cpuUsage = cpuUsage;
@@ -73,6 +76,14 @@ public class Pod {
 
     public void setServiceId(int serviceId) {
         this.serviceId = serviceId;
+    }
+
+    public int getConnection() {
+        return connection;
+    }
+
+    public void setConnection(int connection) {
+        this.connection = connection;
     }
 
 }

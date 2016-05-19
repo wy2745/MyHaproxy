@@ -60,6 +60,8 @@ public class DispatchService extends BaseService {
 
     private Map<String, Pod>           podsMap;
 
+    private Map<String, Double>        podConnection;
+
     private Map<String, Request>       requestMap;
 
     private double                     choiceRate = 1.0 / 3;
@@ -92,10 +94,12 @@ public class DispatchService extends BaseService {
     //每过30秒读取一遍数据库进行刷新，实际测试的时候，可以只对pod的状态进行刷新（因为service，pod，request相对不变）
     @Scheduled(initialDelay = 1000, fixedRate = 1000)
     public void init() {
+        double HighestConnection2 = 0.0;
         Map<Integer, Service> serviceMap2 = new Hashtable<Integer, Service>();
         Map<Integer, List<String>> PodInService2 = new Hashtable<>();
         Map<String, Pod> podsMap2 = new Hashtable<>();
         Map<String, Request> requestMap2 = new HashMap<>();
+        Map<String, Double> podConnection2 = new HashMap<>();
 
         Iterable<Service> services = serviceDAO.findAll();
         for (Service service : services)
@@ -103,7 +107,13 @@ public class DispatchService extends BaseService {
 
         Iterable<Pod> pods = podDAO.findAll();
         for (Pod pod : pods) {
+            if (pod.getConnection() > HighestConnection2)
+                HighestConnection2 = pod.getConnection();
+        }
+        for (Pod pod : pods) {
+
             podsMap2.put(pod.getPodName(), pod);
+            podConnection2.put(pod.getPodName(), pod.getConnection() / HighestConnection2);
             if (PodInService2.containsKey(pod.getServiceId()))
                 PodInService2.get(pod.getServiceId()).add(pod.getPodName());
             else {
@@ -117,6 +127,7 @@ public class DispatchService extends BaseService {
         for (Request request : requests)
             requestMap2.put(request.getRequestPath(), request);
 
+        podConnection = podConnection2;
         serviceMap = serviceMap2;
         PodInService = PodInService2;
         podsMap = podsMap2;
@@ -156,7 +167,8 @@ public class DispatchService extends BaseService {
             return;
         }
         String desination = pick(request, mode);
-        logger.info("dispatch request to pod: " + desination);
+        logger.info("dispatch request to pod: " + desination + "            "
+                    + getPodByName(desination).getAddress() + request.getPath());
         forwardRequest(httpServletRequest, httpServletResponse,
             getPodByName(desination).getAddress() + request.getPath());
 
@@ -220,11 +232,34 @@ public class DispatchService extends BaseService {
         return podName;
     }
 
+    //综合考虑了资源可使用率和连接数来从choice出的样本中选择一个合适的pod
+    private String getBetterPod2(Request request, List<Integer> targetList, int serviceId) {
+        List<String> pods = getPodListByServiceId(serviceId);
+        double highestScore = -100000;
+        String podName = "pod1";
+        for (int index : targetList) {
+            String podName2 = pods.get(index);
+            Pod pod = getPodByName(podName2);
+            double memScore = ((1 - pod.getMemUsage()) - request.getMemCost()) * 10;
+            double cpuScore = ((1 - pod.getCpuUsage()) - request.getCpuCost()) * 60;
+            double connectionScore = (1 - podConnection.get(podName2)) * 30;
+            double score = memScore + cpuScore + connectionScore;
+            logger.info(score + "  " + pod.getPodName());
+            if (highestScore < score) {
+                highestScore = score;
+                podName = pod.getPodName();
+            }
+        }
+        return podName;
+    }
+
     private String choicePick(Request request, int size, int serviceId, String mode) {
         List<Integer> targetList = generateRanNumList(size, choiceRate);
         String target = "pod1";
         if (mode.equals("choice1"))
             target = getBetterPod1(request, targetList, serviceId);
+        else
+            target = getBetterPod2(request, targetList, serviceId);
         //        else if (mode.equals("choice2"))
         //            target = getBetterPod2(request, targetList, serviceId);
         return target;
@@ -293,6 +328,9 @@ public class DispatchService extends BaseService {
             return httpServletRequest.getParameter("RequestPath");
         } else {
             try {
+                String path = httpServletRequest.getParameter("RequestPath");
+                if (path != null)
+                    return path;
                 BufferedReader reader = httpServletRequest.getReader();
                 String str = reader.readLine();
                 while (str != null) {

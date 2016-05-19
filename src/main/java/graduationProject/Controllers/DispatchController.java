@@ -77,8 +77,6 @@ public class DispatchController extends BaseController {
     public void redirect(HttpServletRequest httpServletRequest,
                          HttpServletResponse httpServletResponse) {
         //System.out.println(System.getProperty("java.library.path"));
-
-        System.out.println(dispatchService.getRequestPath(httpServletRequest));
         if (httpServletRequest.getMethod().equals("GET")) {
             try {
                 httpServletResponse.sendRedirect(
