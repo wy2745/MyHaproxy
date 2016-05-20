@@ -2,7 +2,6 @@ package graduationProject.Services;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -60,9 +59,9 @@ public class DispatchService extends BaseService {
 
     private Map<String, Pod>           podsMap;
 
-    private Map<String, Double>        podConnection;
-
     private Map<String, Request>       requestMap;
+
+    private Map<String, Double>        choiceScore;
 
     private double                     choiceRate = 1.0 / 3;
 
@@ -94,12 +93,14 @@ public class DispatchService extends BaseService {
     //每过30秒读取一遍数据库进行刷新，实际测试的时候，可以只对pod的状态进行刷新（因为service，pod，request相对不变）
     @Scheduled(initialDelay = 1000, fixedRate = 1000)
     public void init() {
-        double HighestConnection2 = 0.0;
+        double HighestConnection = 0.0;
+        double HighestCpu = 0.0;
+        double HighestMem = 0.0;
         Map<Integer, Service> serviceMap2 = new Hashtable<Integer, Service>();
         Map<Integer, List<String>> PodInService2 = new Hashtable<>();
         Map<String, Pod> podsMap2 = new Hashtable<>();
-        Map<String, Request> requestMap2 = new HashMap<>();
-        Map<String, Double> podConnection2 = new HashMap<>();
+        Map<String, Request> requestMap2 = new Hashtable<>();
+        Map<String, Double> choiceScore2 = new Hashtable<>();
 
         Iterable<Service> services = serviceDAO.findAll();
         for (Service service : services)
@@ -107,13 +108,39 @@ public class DispatchService extends BaseService {
 
         Iterable<Pod> pods = podDAO.findAll();
         for (Pod pod : pods) {
-            if (pod.getConnection() > HighestConnection2)
-                HighestConnection2 = pod.getConnection();
+            double cpu = pod.getCpuAbility() * (1 - pod.getCpuUsage());
+            double mem = pod.getMemAbility() * (1 - pod.getMemUsage());
+            if (pod.getConnection() > HighestConnection)
+                HighestConnection = pod.getConnection();
+            if (mem > HighestMem)
+                HighestMem = mem;
+            if (cpu > HighestCpu)
+                HighestCpu = cpu;
         }
+        if (HighestConnection == 0.0)
+            HighestConnection = 1;
+        if (HighestCpu == 0.0)
+            HighestCpu = 1;
+        if (HighestMem == 0.0)
+            HighestMem = 1;
+        //logger.info("con: " + HighestConnection + ",mem: " + HighestMem + ",cpu: " + HighestCpu);
+
         for (Pod pod : pods) {
 
             podsMap2.put(pod.getPodName(), pod);
-            podConnection2.put(pod.getPodName(), pod.getConnection() / HighestConnection2);
+
+            //计算分数，以供getBetter2选择
+            //double memScore = ((1 - (pod.getMemAbility() * pod.getMemUsage() / HighestMem))) * 10;
+            double memScore = (pod.getMemAbility() * (1 - pod.getMemUsage()) / HighestMem) * 10;
+            //logger.info(pod.getPodName() + " memscore: " + memScore);
+            //double cpuScore = ((1 - (pod.getCpuAbility() * pod.getCpuUsage() / HighestCpu))) * 60;
+            double cpuScore = (pod.getCpuAbility() * (1 - pod.getCpuUsage()) / HighestCpu) * 60;
+            //logger.info(pod.getPodName() + " cpuscore: " + cpuScore);
+            double connectionScore = (1 - (pod.getConnection() / HighestConnection)) * 30;
+            double score = memScore + cpuScore + connectionScore;
+            //logger.info(pod.getPodName() + "final score = " + score);
+            choiceScore2.put(pod.getPodName(), score);
+
             if (PodInService2.containsKey(pod.getServiceId()))
                 PodInService2.get(pod.getServiceId()).add(pod.getPodName());
             else {
@@ -127,7 +154,7 @@ public class DispatchService extends BaseService {
         for (Request request : requests)
             requestMap2.put(request.getRequestPath(), request);
 
-        podConnection = podConnection2;
+        choiceScore = choiceScore2;
         serviceMap = serviceMap2;
         PodInService = PodInService2;
         podsMap = podsMap2;
@@ -232,22 +259,23 @@ public class DispatchService extends BaseService {
         return podName;
     }
 
-    //综合考虑了资源可使用率和连接数来从choice出的样本中选择一个合适的pod
+    //综合考虑了资源可使用率,配置和连接数来从choice出的样本中选择一个合适的pod
     private String getBetterPod2(Request request, List<Integer> targetList, int serviceId) {
         List<String> pods = getPodListByServiceId(serviceId);
         double highestScore = -100000;
         String podName = "pod1";
         for (int index : targetList) {
-            String podName2 = pods.get(index);
-            Pod pod = getPodByName(podName2);
-            double memScore = ((1 - pod.getMemUsage()) - request.getMemCost()) * 10;
-            double cpuScore = ((1 - pod.getCpuUsage()) - request.getCpuCost()) * 60;
-            double connectionScore = (1 - podConnection.get(podName2)) * 30;
-            double score = memScore + cpuScore + connectionScore;
-            logger.info(score + "  " + pod.getPodName());
+            //将分数计算放到计时任务里面，减少性能损耗
+            //            String podName2 = pods.get(index);
+            //            Pod pod = getPodByName(podName2);
+            //            double memScore = ((1 - pod.getMemUsage()) - request.getMemCost()) * 10;
+            //            double cpuScore = ((1 - pod.getCpuUsage()) - request.getCpuCost()) * 60;
+            //            double connectionScore = (1 - podConnection.get(podName2)) * 30;
+            //            double score = memScore + cpuScore + connectionScore;
+            double score = choiceScore.get(pods.get(index));
             if (highestScore < score) {
                 highestScore = score;
-                podName = pod.getPodName();
+                podName = pods.get(index);
             }
         }
         return podName;

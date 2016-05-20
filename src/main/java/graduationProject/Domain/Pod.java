@@ -30,6 +30,12 @@ public class Pod {
     @Column(name = "connection")
     private int    connection;
 
+    @Column(name = "cpuAbility")
+    private double cpuAbility;
+
+    @Column(name = "memAbility")
+    private double memAbility;
+
     //    public Pod(String podName, double cpuUsage, double memUsage, String address, int serviceId) {
     //        this.podName = podName;
     //        this.cpuUsage = cpuUsage;
@@ -84,6 +90,22 @@ public class Pod {
 
     public void setConnection(int connection) {
         this.connection = connection;
+    }
+
+    public double getCpuAbility() {
+        return cpuAbility;
+    }
+
+    public void setCpuAbility(double cpuAbility) {
+        this.cpuAbility = cpuAbility;
+    }
+
+    public double getMemAbility() {
+        return memAbility;
+    }
+
+    public void setMemAbility(double memAbility) {
+        this.memAbility = memAbility;
     }
 
 }
