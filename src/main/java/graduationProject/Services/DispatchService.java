@@ -63,7 +63,9 @@ public class DispatchService extends BaseService {
 
     private Map<String, Double>        choiceScore;
 
-    private double                     choiceRate = 1.0 / 3;
+    private double                     choiceRate  = 1.0 / 3;
+
+    private int                        robinChoice = 0;
 
     public void generateForTest() {
         addService(1, "pupu", "a");
@@ -241,6 +243,13 @@ public class DispatchService extends BaseService {
         return pods.get(target);
     }
 
+    private String robinPick(int serviceId) {
+        List<String> pods = PodInService.get(serviceId);
+        int size = pods.size();
+        robinChoice = (robinChoice + 1) % size;
+        return pods.get(robinChoice);
+    }
+
     private String getBetterPod1(Request request, List<Integer> targetList, int serviceId) {
         List<String> pods = getPodListByServiceId(serviceId);
         double highestScore = -100000;
@@ -298,6 +307,8 @@ public class DispatchService extends BaseService {
         //  mysql实现版本
         if (mode.equals("random"))
             return randomPick(request.getServiceId());
+        if (mode.equals("robin"))
+            return robinPick(request.getServiceId());
         return choicePick(request, getPodListByServiceId(request.getServiceId()).size(),
             request.getServiceId(), mode);
             // // randomPick 初始代码

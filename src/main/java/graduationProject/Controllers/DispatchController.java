@@ -65,12 +65,25 @@ public class DispatchController extends BaseController {
 
     }
 
+    @RequestMapping(value = "/testRobin", method = { RequestMethod.GET, RequestMethod.POST })
+    public void testrobin(HttpServletRequest httpServletRequest,
+                          HttpServletResponse httpServletResponse) {
+        //        dispatchService.deleteForTest();
+        dispatchService.dispatchRequest(httpServletRequest, httpServletResponse, "robin");
+    }
+
+    @RequestMapping(value = "/testFinalChoice", method = { RequestMethod.GET, RequestMethod.POST })
+    public void testfinalChoice(HttpServletRequest httpServletRequest,
+                                HttpServletResponse httpServletResponse) {
+        //        dispatchService.deleteForTest();
+        dispatchService.dispatchRequest(httpServletRequest, httpServletResponse, "choice");
+    }
+
     @RequestMapping(value = "/testChoice", method = { RequestMethod.GET, RequestMethod.POST })
     public void testchoice(HttpServletRequest httpServletRequest,
                            HttpServletResponse httpServletResponse) {
         //        dispatchService.deleteForTest();
         dispatchService.dispatchRequest(httpServletRequest, httpServletResponse, "choice1");
-
     }
 
     @RequestMapping(value = "/redirect", method = { RequestMethod.GET, RequestMethod.POST })
