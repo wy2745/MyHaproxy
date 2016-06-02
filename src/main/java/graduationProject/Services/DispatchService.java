@@ -63,9 +63,13 @@ public class DispatchService extends BaseService {
 
     private Map<String, Double>        choiceScore;
 
-    private double                     choiceRate  = 1.0 / 3;
+    private double                     choiceRate        = 1.0 / 3;
 
-    private int                        robinChoice = 0;
+    private int                        robinChoice       = 0;
+
+    private double                     HighestConnection = 0.0;
+    private double                     HighestCpu        = 0.0;
+    private double                     HighestMem        = 0.0;
 
     public void generateForTest() {
         addService(1, "pupu", "a");
@@ -95,9 +99,10 @@ public class DispatchService extends BaseService {
     //每过30秒读取一遍数据库进行刷新，实际测试的时候，可以只对pod的状态进行刷新（因为service，pod，request相对不变）
     @Scheduled(initialDelay = 1000, fixedRate = 1000)
     public void init() {
-        double HighestConnection = 0.0;
-        double HighestCpu = 0.0;
-        double HighestMem = 0.0;
+        HighestConnection = 0.0;
+        HighestCpu = 0.0;
+        HighestMem = 0.0;
+
         Map<Integer, Service> serviceMap2 = new Hashtable<Integer, Service>();
         Map<Integer, List<String>> PodInService2 = new Hashtable<>();
         Map<String, Pod> podsMap2 = new Hashtable<>();
@@ -136,9 +141,10 @@ public class DispatchService extends BaseService {
             double memScore = (pod.getMemAbility() * (1 - pod.getMemUsage()) / HighestMem) * 10;
             //logger.info(pod.getPodName() + " memscore: " + memScore);
             //double cpuScore = ((1 - (pod.getCpuAbility() * pod.getCpuUsage() / HighestCpu))) * 60;
-            double cpuScore = (pod.getCpuAbility() * (1 - pod.getCpuUsage()) / HighestCpu) * 60;
+            double cpuScore = (pod.getCpuAbility() * (1 - pod.getCpuUsage()) / HighestCpu) * 40;
             //logger.info(pod.getPodName() + " cpuscore: " + cpuScore);
-            double connectionScore = (1 - (pod.getConnection() / HighestConnection)) * 30;
+            //            double connectionScore = (1 - (pod.getConnection() / HighestConnection)) * 30;
+            double connectionScore = 0;
             double score = memScore + cpuScore + connectionScore;
             //logger.info(pod.getPodName() + "final score = " + score);
             choiceScore2.put(pod.getPodName(), score);
@@ -182,6 +188,11 @@ public class DispatchService extends BaseService {
         }
     }
 
+    private void increaseLoad(String podName, double cpu, double mem) {
+        this.podsMap.get(podName).setCpuUsage(this.podsMap.get(podName).getCpuUsage() + cpu);
+        this.podsMap.get(podName).setMemUsage(this.podsMap.get(podName).getMemUsage() + mem);
+    }
+
     //根据mode的要求选择对应的算法，取出对应的podName，利用算法进行选择，拿到合适的pod的地址
     public void dispatchRequest(HttpServletRequest httpServletRequest,
                                 HttpServletResponse httpServletResponse, String mode) {
@@ -196,8 +207,9 @@ public class DispatchService extends BaseService {
             return;
         }
         String desination = pick(request, mode);
-        logger.info("dispatch request to pod: " + desination + "            "
-                    + getPodByName(desination).getAddress() + request.getPath());
+        increaseLoad(desination, request.getCpuCost(), request.getMemCost());
+        //        logger.info("dispatch request to pod: " + desination + "            "
+        //                    + getPodByName(desination).getAddress() + request.getPath());
         forwardRequest(httpServletRequest, httpServletResponse,
             getPodByName(desination).getAddress() + request.getPath());
 
